@@ -1,0 +1,27 @@
+{
+  "name": "zapatos",
+  "version": "1.0.0",
+  "description": "BODE API with Express and Nodemailer",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndreaCastano09/ZAPATOS.git"
+  },
+  "author": "Andrea Castano",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AndreaCastano09/ZAPATOS/issues"
+  },
+  "homepage": "https://github.com/AndreaCastano09/ZAPATOS#readme",
+  "dependencies": {
+    "express": "^4.19.1",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.9.13"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
