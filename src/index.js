@@ -5,6 +5,10 @@ const nodemailer = require('nodemailer')
 const transporter = require('./mailer')
 const{ leerArchivo, escribirArchivo } = require('./files')
 
+const Joi = require('joi');
+const {zapatoSchema} = require('../schemas/schema');
+const moment = require('moment');
+
 const app = express();
 const morgan = require('morgan');
 
@@ -20,9 +24,29 @@ app.use(express.json());
 app.get('/todos', (req, res) =>{
 
     //Leer archivo
-    const todos = leerArchivo('./src/zapatos.json')
-    res.send(todos)
-})
+    const todos = leerArchivo('./src/zapatos.json');
+    
+
+    const { keyword } = req.query;
+
+    
+    if (keyword) {
+        const filteredTodos = todos.filter(todo => {
+            
+            return Object.values(todo).some(value => {
+                if (typeof value === 'string') {
+                    return value.toLowerCase().includes(keyword.toLowerCase());
+                }
+                return false;
+            });
+        });
+        res.send(filteredTodos);
+    } else {
+        // Si no se proporciona un query param, enviar todos los registros
+        res.send(todos);
+    }
+});
+
 
 //show
 app.get('/todos/:identificacion', (req, res)  =>{
@@ -37,19 +61,28 @@ app.get('/todos/:identificacion', (req, res)  =>{
     
     //existe
     res.send(todo)    
-    })
+    });
 
     //store
 app.post('/todos', (req, res) =>{
+    const todo = req.body; 
 
-    const todo = req.body
+     // Validar los datos recibidos usando el esquema de validación
+    const { error } = zapatoSchema.validate(todo);
+    if (error) {
+        // Si hay errores de validación, enviar una respuesta con el mensaje de error
+        res.status(400).send(error.details[0].message);
+        return;
+    }
+
+
     const todos = leerArchivo('./src/zapatos.json')
     todo.identificacion = todos.length + 1
     todos.push(todo)
     //escribir archivo
     escribirArchivo('./src/zapatos.json', todos)
     res.status(201).send(todo)
-})
+});
 
 //actualizar 
 app.put('/todos/:identificacion', (req, res) => {
@@ -67,6 +100,7 @@ app.put('/todos/:identificacion', (req, res) => {
     // Obtener los zapatos a actualizar
     let todo = todos[todoIndex];
 
+
     // Actualizar los campos de los zapatos
     todo = {
         ...todo,
@@ -77,6 +111,8 @@ app.put('/todos/:identificacion', (req, res) => {
         genero: genero || todo.genero,
         precio: precio || todo.precio,
         disponibilidad: disponibilidad || todo.disponibilidad,
+        // Añadir o mantener el campo updated_at
+        updated_at: todo.updated_at || moment().format('YYYY-MM-DD HH:mm'),
     };
 
     // Actualizar zapats en el index
@@ -87,7 +123,6 @@ app.put('/todos/:identificacion', (req, res) => {
 
     res.send(todo);
 });
-
 
 //eliminar
 app.delete('/todos/:identificacion', (req, res) => {

@@ -1,4 +1,5 @@
 const fs = require('fs');
+
 const { isArgumentsObject } = require('util/types');
 
 function leerArchivo(path) {
